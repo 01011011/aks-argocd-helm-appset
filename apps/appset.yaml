@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: myapps
+spec:
+  generators:
+    - list:
+        elements:
+          - name: dev
+            valuesFile: values-dev.yaml
+          - name: prod
+            valuesFile: values-prod.yaml
+  template:
+    metadata:
+      name: '{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/01011011/test-gitops-project.git
+        targetRevision: HEAD
+        path: apps/myapp
+        helm:
+          valueFiles:
+            - '{{valuesFile}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: default
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true

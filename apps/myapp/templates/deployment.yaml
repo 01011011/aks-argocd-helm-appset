@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+        - name: myapp
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: CLIENT_ID
+              value: {{ (lookup "v1" "ConfigMap" "default" "argo-runtime-config").data.client_id }}
+            - name: VAULT_NAME
+              value: {{ (lookup "v1" "ConfigMap" "default" "argo-runtime-config").data.vault_name }}
+            - name: REGISTRY_URL
+              value: {{ (lookup "v1" "ConfigMap" "default" "argo-runtime-config").data.registry_url }}
