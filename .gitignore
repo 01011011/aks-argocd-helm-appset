@@ -1,15 +1,18 @@
-# Terraform state and backup files
+# Ignore Terraform state and backup files
 terraform.tfstate
 terraform.tfstate.*
 *.tfstate
 *.tfstate.*
 
-# Crash log files
-crash.log
-
-# .terraform directory
+# Ignore .terraform directory
 .terraform/
 .terraform/**
+
+# Ignore Terraform lock file
+.terraform.lock.hcl
+
+# Crash log files
+crash.log
 
 # Local .env files
 .env
