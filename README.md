@@ -1,6 +1,6 @@
 # 🚀 AKS + ArgoCD + Helm + GitHub + ApplicationSets: Full Solution
 
-This guide will help you provision an AKS cluster, install ArgoCD, connect it to your GitHub repo, and deploy a sample Helm app using ApplicationSets. All steps are copy-paste ready and use generic placeholders—replace them with your own values as needed.
+This guide will help you provision an AKS cluster, install ArgoCD, connect it to your GitHub repo, and deploy a sample Helm app using ApplicationSets. All steps are copy-paste ready and use generic placeholders—replace them with your own values as needed. **No secrets, subscription IDs, or sensitive data are included.**
 
 ---
 
@@ -77,15 +77,15 @@ resource "kubernetes_config_map" "argo_runtime_config" {
     namespace = "default"
   }
   data = {
-    client_id    = "<CLIENT_ID>"
-    vault_name   = "<VAULT_NAME>"
-    registry_url = "<REGISTRY_URL>"
+    client_id    = "<CLIENT_ID>" # <-- Replace with your value or use a placeholder
+    vault_name   = "<VAULT_NAME>" # <-- Replace with your value or use a placeholder
+    registry_url = "<REGISTRY_URL>" # <-- Replace with your value or use a placeholder
   }
   depends_on = [helm_release.argocd]
 }
 ```
 
-> **Note:** Create a minimal `argocd-values.yaml` in the same directory (can be empty or use ArgoCD defaults).
+> **Note:** Do not store secrets, subscription IDs, or sensitive values in this file. Use placeholders and inject real values securely (e.g., via CI/CD or secret management tools).
 
 ---
 
@@ -147,7 +147,7 @@ argocd repo add https://github.com/<GITHUB_USERNAME>/<YOUR_REPO>.git \
 > **Note:**
 > - For public repos, your PAT needs the `public_repo` scope.
 > - For private repos, your PAT needs the `repo` scope.
-> - Never share your PAT or admin password.
+> - Never share your PAT or admin password. Do not store them in code or version control.
 
 ---
 
@@ -346,6 +346,7 @@ EOF
 
 ## ℹ️ Notes
 
+- Do not store secrets, subscription IDs, or sensitive values in code or version control. Use secret management tools and inject values securely.
 - Any changes you make to your Helm chart or app files and push to GitHub will be picked up by ArgoCD and deployed automatically (if auto-sync is enabled).
 - You do **not** need to run any `helm` commands yourself—ArgoCD handles the deployment using the files in your repo.
 - The sample app now uses explicit mapping from ConfigMap keys to uppercase environment variables in the pod for robust and predictable configuration injection.
@@ -406,3 +407,4 @@ If you cannot log in with the ArgoCD CLI (e.g., you get `context deadline exceed
 - For more details, see comments in the Terraform and YAML files.
 - Adjust resource names, locations, and values as needed for your environment.
 - For production, review security and scaling settings.
+- Never commit secrets, subscription IDs, or sensitive data to your repository.
