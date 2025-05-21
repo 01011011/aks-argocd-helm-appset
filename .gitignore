@@ -1,0 +1,21 @@
+# Terraform state and backup files
+terraform.tfstate
+terraform.tfstate.*
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+
+# .terraform directory
+.terraform/
+
+# Local .env files
+.env
+
+# VSCode settings
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
