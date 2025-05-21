@@ -16,7 +16,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/01011011/test-gitops-project.git
+        repoURL: https://github.com/01011011/aks-argocd-helm-appset.git
         targetRevision: HEAD
         path: apps/myapp
         helm:

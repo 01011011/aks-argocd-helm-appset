@@ -1,5 +1,6 @@
 provider "azurerm" {
   features {}
+  subscription_id = "e930349d-9137-4a7f-af1c-d1cb2221555b"
 }
 
 provider "helm" {
@@ -13,7 +14,7 @@ provider "kubernetes" {
 }
 
 variable "resource_group" { default = "tql-aks-rg" }
-variable "location" { default = "eastus" }
+variable "location" { default = "westus" }
 variable "aks_name" { default = "tql-aks" }
 
 resource "azurerm_resource_group" "rg" {
@@ -30,7 +31,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   default_node_pool {
     name       = "default"
     node_count = 1
-    vm_size    = "Standard_DS2_v2"
+    vm_size    = "Standard_D2ads_v6"
   }
 
   identity {
@@ -60,17 +61,17 @@ resource "helm_release" "argocd" {
   depends_on = [null_resource.kubeconfig]
 }
 
+resource "random_integer" "suffix" {
+  min = 10000
+  max = 99999
+}
+
 resource "azurerm_container_registry" "acr" {
   name                = "tqlacr${random_integer.suffix.result}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   sku                 = "Basic"
   admin_enabled       = false
-}
-
-resource "random_integer" "suffix" {
-  min = 10000
-  max = 99999
 }
 
 resource "azurerm_role_assignment" "aks_acr_pull" {

@@ -65,7 +65,7 @@ resource "helm_release" "argocd" {
   namespace  = "argocd"
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
-  version    = "5.46.0"
+  version    = "5.52.0"
   create_namespace = true
   values = [file("${path.module}/argocd-values.yaml")]
   depends_on = [null_resource.kubeconfig]
@@ -127,10 +127,33 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 
 ## 5️⃣ Connect ArgoCD to Your GitHub Repo
 
-```sh
-argocd repo add https://github.com/01011011/aks-argocd-helm-appset.git \
+Before you can add your GitHub repo, you must log in to the ArgoCD API server using the CLI:
+
+```powershell
+# 1. Get the ArgoCD admin password (copy the output)
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+# 2. Log in to ArgoCD (use the password from above)
+argocd login localhost:8080 --username admin --password <ARGOCD_ADMIN_PASSWORD> --insecure
+```
+
+- `localhost:8080` is used if you are port-forwarding with:
+  ```powershell
+  kubectl -n argocd port-forward svc/argocd-server 8080:443
+  ```
+- The `--insecure` flag is needed for self-signed certificates in local/dev setups.
+
+After logging in, add your GitHub repo (replace `<YOUR_GITHUB_PAT>` with your GitHub Personal Access Token):
+
+```powershell
+argocd repo add https://github.com/01011011/aks-argocd-helm-appset.git \ 
   --username 01011011 --password <YOUR_GITHUB_PAT>
 ```
+
+> **Note:**
+> - For public repos, your PAT needs the `public_repo` scope.
+> - For private repos, your PAT needs the `repo` scope.
+> - Never share your PAT or admin password.
 
 ---
 
