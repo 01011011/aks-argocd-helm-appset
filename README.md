@@ -1,12 +1,12 @@
 # 🚀 AKS + ArgoCD + Helm + GitHub + ApplicationSets: Full Solution
 
-This guide will help you provision an AKS cluster, install ArgoCD, connect it to your GitHub repo, and deploy a sample Helm app using ApplicationSets. All steps are copy-paste ready!
+This guide will help you provision an AKS cluster, install ArgoCD, connect it to your GitHub repo, and deploy a sample Helm app using ApplicationSets. All steps are copy-paste ready and use generic placeholders—replace them with your own values as needed.
 
 ---
 
 ## 1️⃣ Terraform: Provision AKS & Install ArgoCD
 
-Create a file named `main.tf` in your project root with the following content:
+Create a file named `main.tf` in your project root with the following content (update resource names, locations, and values as needed):
 
 ```hcl
 provider "azurerm" {
@@ -23,9 +23,9 @@ provider "kubernetes" {
   config_path = "~/.kube/config"
 }
 
-variable "resource_group" { default = "tql-aks-rg" }
-variable "location" { default = "eastus" }
-variable "aks_name" { default = "tql-aks" }
+variable "resource_group" { default = "<RESOURCE_GROUP>" }
+variable "location" { default = "<LOCATION>" }
+variable "aks_name" { default = "<AKS_CLUSTER_NAME>" }
 
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group
@@ -77,9 +77,9 @@ resource "kubernetes_config_map" "argo_runtime_config" {
     namespace = "default"
   }
   data = {
-    client_id    = "1111-aaaa-bbbb-2222"
-    vault_name   = "my-test-vault"
-    registry_url = "myregistry.azurecr.io"
+    client_id    = "<CLIENT_ID>"
+    vault_name   = "<VAULT_NAME>"
+    registry_url = "<REGISTRY_URL>"
   }
   depends_on = [helm_release.argocd]
 }
@@ -91,11 +91,8 @@ resource "kubernetes_config_map" "argo_runtime_config" {
 
 ## 2️⃣ Initialize & Apply Terraform
 
-```sh
-# Log in to Azure if not already
+```powershell
 az login
-
-# Initialize and apply Terraform
 terraform init
 terraform apply -auto-approve
 ```
@@ -104,22 +101,22 @@ terraform apply -auto-approve
 
 ## 3️⃣ Get AKS Credentials (if not done automatically)
 
-```sh
-az aks get-credentials --resource-group tql-aks-rg --name tql-aks --overwrite-existing
+```powershell
+az aks get-credentials --resource-group <RESOURCE_GROUP> --name <AKS_CLUSTER_NAME> --overwrite-existing
 ```
 
 ---
 
 ## 4️⃣ Access ArgoCD UI
 
-```sh
+```powershell
 kubectl -n argocd port-forward svc/argocd-server 8080:443
 ```
 
 - Open [https://localhost:8080](https://localhost:8080) in your browser.
 - Get the ArgoCD admin password:
 
-```sh
+```powershell
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 ```
 
@@ -137,17 +134,14 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 argocd login localhost:8080 --username admin --password <ARGOCD_ADMIN_PASSWORD> --insecure
 ```
 
-- `localhost:8080` is used if you are port-forwarding with:
-  ```powershell
-  kubectl -n argocd port-forward svc/argocd-server 8080:443
-  ```
+- `localhost:8080` is used if you are port-forwarding as above.
 - The `--insecure` flag is needed for self-signed certificates in local/dev setups.
 
-After logging in, add your GitHub repo (replace `<YOUR_GITHUB_PAT>` with your GitHub Personal Access Token):
+After logging in, add your GitHub repo (replace `<GITHUB_USERNAME>` and `<YOUR_GITHUB_PAT>` with your own):
 
 ```powershell
-argocd repo add https://github.com/01011011/aks-argocd-helm-appset.git \ 
-  --username 01011011 --password <YOUR_GITHUB_PAT>
+argocd repo add https://github.com/<GITHUB_USERNAME>/<YOUR_REPO>.git \ 
+  --username <GITHUB_USERNAME> --password <YOUR_GITHUB_PAT>
 ```
 
 > **Note:**
@@ -204,11 +198,20 @@ spec:
             - containerPort: 80
           env:
             - name: CLIENT_ID
-              value: {{ (lookup "v1" "ConfigMap" "default" "argo-runtime-config").data.client_id }}
+              valueFrom:
+                configMapKeyRef:
+                  name: argo-runtime-config
+                  key: client_id
             - name: VAULT_NAME
-              value: {{ (lookup "v1" "ConfigMap" "default" "argo-runtime-config").data.vault_name }}
+              valueFrom:
+                configMapKeyRef:
+                  name: argo-runtime-config
+                  key: vault_name
             - name: REGISTRY_URL
-              value: {{ (lookup "v1" "ConfigMap" "default" "argo-runtime-config").data.registry_url }}
+              valueFrom:
+                configMapKeyRef:
+                  name: argo-runtime-config
+                  key: registry_url
 ```
 
 - `apps/myapp/values-dev.yaml`:
@@ -254,7 +257,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/01011011/aks-argocd-helm-appset.git
+        repoURL: https://github.com/<GITHUB_USERNAME>/<YOUR_REPO>.git
         targetRevision: HEAD
         path: apps/myapp
         helm:
@@ -273,9 +276,7 @@ spec:
 
 ## 8️⃣ Deploy & Test
 
-```sh
-# Commit and push all files to your GitHub repo
-# (Make sure your repo matches the structure above)
+```powershell
 git add .
 git commit -m "Initial AKS/ArgoCD/Helm sample app setup"
 git push origin main
@@ -286,24 +287,35 @@ git push origin main
 
 ---
 
-## 🚀 Deploy the Sample Helm App
+## 🚦 How to Test Environment Variable Injection
 
-1. **Push your Helm chart and app files to GitHub:**
+After your app is deployed and running, follow these steps to verify that environment variables are correctly injected from the ConfigMap:
 
-   Open a terminal in your project root and run:
+1. **Check that the pod is running:**
    ```powershell
-   git add .
-   git commit -m "Add sample Helm chart and ApplicationSet"
-   git push origin main
+   kubectl get pods -l app=myapp
+   ```
+2. **Check the environment variables in the running pod:**
+   ```powershell
+   # Replace <pod-name> with the actual pod name from the previous command
+   kubectl exec -it <pod-name> -- printenv | findstr CLIENT_ID
+   kubectl exec -it <pod-name> -- printenv | findstr VAULT_NAME
+   kubectl exec -it <pod-name> -- printenv | findstr REGISTRY_URL
+   ```
+   You should see output like:
+   ```
+   CLIENT_ID=your-client-id
+   VAULT_NAME=your-vault-name
+   REGISTRY_URL=your-registry-url
    ```
 
-2. **ArgoCD will automatically detect and deploy your app:**
-   - If you have set up the ApplicationSet (`apps/appset.yaml`) in your repo and connected the repo in ArgoCD, ArgoCD will automatically discover and deploy the sample app to your AKS cluster.
-   - You can monitor the deployment and sync status in the ArgoCD web UI under **Applications**.
-
-3. **If you want to manually create an Application or ApplicationSet in the UI:**
-   - Go to **Applications** in the ArgoCD UI.
-   - Click **NEW APP** or **NEW APPSET** and follow the prompts, pointing to the correct path in your repo (e.g., `apps/appset.yaml` for the ApplicationSet, or `apps/myapp` for a direct Helm app).
+**Troubleshooting:**
+- If the variables are empty or missing, ensure the `argo-runtime-config` ConfigMap exists in the `default` namespace and contains the correct keys (`client_id`, `vault_name`, `registry_url`).
+- If you update the ConfigMap, restart the deployment to pick up changes:
+  ```powershell
+  kubectl rollout restart deployment/myapp
+  ```
+- If you want to use different environment variable names, update the `env` section in your `deployment.yaml` accordingly.
 
 ---
 
@@ -311,7 +323,7 @@ git push origin main
 
 For your sample app to inject values from the ConfigMap, the `argo-runtime-config` ConfigMap **must exist in the `default` namespace** before you deploy the app with ArgoCD.
 
-You can create it manually with this command (run in PowerShell):
+You can create it manually with this command (replace values as needed):
 
 ```powershell
 kubectl apply -f - <<EOF
@@ -321,9 +333,9 @@ metadata:
   name: argo-runtime-config
   namespace: default
 data:
-  client_id: "1111-aaaa-bbbb-2222"
-  vault_name: "my-test-vault"
-  registry_url: "myregistry.azurecr.io"
+  client_id: "<CLIENT_ID>"
+  vault_name: "<VAULT_NAME>"
+  registry_url: "<REGISTRY_URL>"
 EOF
 ```
 
@@ -336,6 +348,7 @@ EOF
 
 - Any changes you make to your Helm chart or app files and push to GitHub will be picked up by ArgoCD and deployed automatically (if auto-sync is enabled).
 - You do **not** need to run any `helm` commands yourself—ArgoCD handles the deployment using the files in your repo.
+- The sample app now uses explicit mapping from ConfigMap keys to uppercase environment variables in the pod for robust and predictable configuration injection.
 
 ---
 
@@ -344,7 +357,7 @@ EOF
 - Use the ArgoCD UI to monitor and manage deployments.
 - Use `kubectl` to check resources:
 
-```sh
+```powershell
 kubectl get pods -A
 kubectl get svc -A
 ```
@@ -368,8 +381,8 @@ If you cannot log in with the ArgoCD CLI (e.g., you get `context deadline exceed
    - Go to **Settings → Repositories**.
    - Click **Connect Repo using HTTPS** (change the connection method from SSH to HTTPS if needed).
    - Fill in the fields:
-     - **Repository URL:** `https://github.com/01011011/aks-argocd-helm-appset.git`
-     - **Username:** `01011011`
+     - **Repository URL:** `https://github.com/<GITHUB_USERNAME>/<YOUR_REPO>.git`
+     - **Username:** `<GITHUB_USERNAME>`
      - **Password:** `<YOUR_GITHUB_PAT>` (Personal Access Token)
      - **Project:** `default`
      - Leave other fields as default/blank.
@@ -388,7 +401,7 @@ If you cannot log in with the ArgoCD CLI (e.g., you get `context deadline exceed
 
 ---
 
-## ℹ️ Notes
+## ℹ️ More Notes
 
 - For more details, see comments in the Terraform and YAML files.
 - Adjust resource names, locations, and values as needed for your environment.
