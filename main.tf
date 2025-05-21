@@ -54,7 +54,7 @@ resource "helm_release" "argocd" {
   namespace  = "argocd"
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
-  version    = "5.46.0"
+  version    = "5.52.0"
   create_namespace = true
   values = [file("${path.module}/argocd-values.yaml")]
   depends_on = [null_resource.kubeconfig]
