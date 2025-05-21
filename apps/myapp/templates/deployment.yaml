@@ -1,3 +1,4 @@
+{{- $cm := (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,7 +13,6 @@ spec:
       labels:
         app: myapp
     spec:
-      {{- $cm := (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}
       containers:
         - name: myapp
           image: nginx:latest
