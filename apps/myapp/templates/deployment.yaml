@@ -19,8 +19,8 @@ spec:
             - containerPort: 80
           env:
             - name: CLIENT_ID
-              value: {{- with (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}{{ .data.client_id | default "" }}{{- else }}""{{- end }}
+              value: {{ with (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}{{ .data.client_id | default "" }}{{ else }}{{ "" }}{{ end }}
             - name: VAULT_NAME
-              value: {{- with (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}{{ .data.vault_name | default "" }}{{- else }}""{{- end }}
+              value: {{ with (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}{{ .data.vault_name | default "" }}{{ else }}{{ "" }}{{ end }}
             - name: REGISTRY_URL
-              value: {{- with (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}{{ .data.registry_url | default "" }}{{- else }}""{{- end }}
+              value: {{ with (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}{{ .data.registry_url | default "" }}{{ else }}{{ "" }}{{ end }}
