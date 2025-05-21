@@ -298,6 +298,43 @@ kubectl get svc -A
 
 ---
 
+## 🛠️ Troubleshooting: ArgoCD CLI Login Issues
+
+If you cannot log in with the ArgoCD CLI (e.g., you get `context deadline exceeded`), you can use the ArgoCD web UI to connect your GitHub repository and manage your applications.
+
+### Add Your GitHub Repo via the ArgoCD Web UI
+
+1. **Access the ArgoCD UI:**
+   - Open [https://localhost:8080](https://localhost:8080) in your browser.
+   - Log in as `admin` with the password from:
+     ```powershell
+     kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+     ```
+
+2. **Add Your GitHub Repository:**
+   - Go to **Settings → Repositories**.
+   - Click **Connect Repo using HTTPS** (change the connection method from SSH to HTTPS if needed).
+   - Fill in the fields:
+     - **Repository URL:** `https://github.com/01011011/aks-argocd-helm-appset.git`
+     - **Username:** `01011011`
+     - **Password:** `<YOUR_GITHUB_PAT>` (Personal Access Token)
+     - **Project:** `default`
+     - Leave other fields as default/blank.
+   - Click **CONNECT** at the top.
+
+3. **Sync or Create Applications:**
+   - Go to **Applications** in the UI.
+   - If your ApplicationSet (`apps/appset.yaml`) is in your repo, ArgoCD should detect and display the generated applications.
+   - If not, you can create a new ApplicationSet or Application in the UI, pointing to the path `apps/appset.yaml` in your repo.
+
+4. **Monitor and Manage:**
+   - Use the UI to sync, monitor, and manage your deployments.
+   - Any changes you push to GitHub will be picked up by ArgoCD.
+
+> **Tip:** The web UI is fully supported and can be used for all ArgoCD operations if the CLI does not work in your environment.
+
+---
+
 ## ℹ️ Notes
 
 - For more details, see comments in the Terraform and YAML files.
