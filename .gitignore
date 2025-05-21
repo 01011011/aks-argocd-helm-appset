@@ -9,6 +9,7 @@ crash.log
 
 # .terraform directory
 .terraform/
+.terraform/**
 
 # Local .env files
 .env
