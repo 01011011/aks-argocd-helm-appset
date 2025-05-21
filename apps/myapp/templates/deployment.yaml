@@ -12,8 +12,8 @@ spec:
       labels:
         app: myapp
     spec:
+      {{- $cm := (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}
       containers:
-        {{- $cm := (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}
         - name: myapp
           image: nginx:latest
           ports:
