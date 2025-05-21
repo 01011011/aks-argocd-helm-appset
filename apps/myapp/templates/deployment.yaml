@@ -13,12 +13,11 @@ spec:
         app: myapp
     spec:
       containers:
+        {{- $cm := (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}
         - name: myapp
           image: nginx:latest
           ports:
             - containerPort: 80
-          # Define $cm before using it in env
-          {{- $cm := (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}
           env:
             - name: CLIENT_ID
               value: {{- if $cm }}{{ $cm.data.client_id | default "" }}{{- else }}""{{- end }}
