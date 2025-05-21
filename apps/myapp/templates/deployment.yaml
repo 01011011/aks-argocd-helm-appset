@@ -17,6 +17,8 @@ spec:
           image: nginx:latest
           ports:
             - containerPort: 80
+          # Define $cm before using it in env
+          {{- $cm := (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}
           env:
             - name: CLIENT_ID
               value: {{- if $cm }}{{ $cm.data.client_id | default "" }}{{- else }}""{{- end }}
@@ -24,4 +26,3 @@ spec:
               value: {{- if $cm }}{{ $cm.data.vault_name | default "" }}{{- else }}""{{- end }}
             - name: REGISTRY_URL
               value: {{- if $cm }}{{ $cm.data.registry_url | default "" }}{{- else }}""{{- end }}
-{{- $cm := (lookup "v1" "ConfigMap" "default" "argo-runtime-config") }}
