@@ -307,6 +307,31 @@ git push origin main
 
 ---
 
+## ⚠️ Ensure the ConfigMap Exists Before Deploying the App
+
+For your sample app to inject values from the ConfigMap, the `argo-runtime-config` ConfigMap **must exist in the `default` namespace** before you deploy the app with ArgoCD.
+
+You can create it manually with this command (run in PowerShell):
+
+```powershell
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argo-runtime-config
+  namespace: default
+data:
+  client_id: "1111-aaaa-bbbb-2222"
+  vault_name: "my-test-vault"
+  registry_url: "myregistry.azurecr.io"
+EOF
+```
+
+- If you use Terraform to create the ConfigMap, make sure it is applied before the app is deployed.
+- If the ConfigMap is missing, your app will deploy with empty environment variables.
+
+---
+
 ## ℹ️ Notes
 
 - Any changes you make to your Helm chart or app files and push to GitHub will be picked up by ArgoCD and deployed automatically (if auto-sync is enabled).
