@@ -17,6 +17,19 @@ spec:
           image: nginx:latest
           ports:
             - containerPort: 80
-          envFrom:
-            - configMapRef:
-                name: argo-runtime-config
+          env:
+            - name: CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: argo-runtime-config
+                  key: client_id
+            - name: VAULT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: argo-runtime-config
+                  key: vault_name
+            - name: REGISTRY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: argo-runtime-config
+                  key: registry_url
