@@ -286,6 +286,34 @@ git push origin main
 
 ---
 
+## 🚀 Deploy the Sample Helm App
+
+1. **Push your Helm chart and app files to GitHub:**
+
+   Open a terminal in your project root and run:
+   ```powershell
+   git add .
+   git commit -m "Add sample Helm chart and ApplicationSet"
+   git push origin main
+   ```
+
+2. **ArgoCD will automatically detect and deploy your app:**
+   - If you have set up the ApplicationSet (`apps/appset.yaml`) in your repo and connected the repo in ArgoCD, ArgoCD will automatically discover and deploy the sample app to your AKS cluster.
+   - You can monitor the deployment and sync status in the ArgoCD web UI under **Applications**.
+
+3. **If you want to manually create an Application or ApplicationSet in the UI:**
+   - Go to **Applications** in the ArgoCD UI.
+   - Click **NEW APP** or **NEW APPSET** and follow the prompts, pointing to the correct path in your repo (e.g., `apps/appset.yaml` for the ApplicationSet, or `apps/myapp` for a direct Helm app).
+
+---
+
+## ℹ️ Notes
+
+- Any changes you make to your Helm chart or app files and push to GitHub will be picked up by ArgoCD and deployed automatically (if auto-sync is enabled).
+- You do **not** need to run any `helm` commands yourself—ArgoCD handles the deployment using the files in your repo.
+
+---
+
 ## 9️⃣ Monitor & Manage
 
 - Use the ArgoCD UI to monitor and manage deployments.
